@@ -47,7 +47,8 @@ func (a *app) SetupFrontEnd(publicPath embed.FS) {
 	a.server.Get("/", func(ctx fiber.Ctx) error {
 		html, err := publicPath.ReadFile("public/index.html")
 		if err != nil {
-			return ctx.Status(fiber.StatusNotFound).SendString("Public/index.html not frontend")
+			slog.Error(`html index not found! Please build /client using pnpm run build and recompile application`)
+			return ctx.Status(fiber.StatusNotFound).SendString("public/index.html not found")
 		}
 		return ctx.Type("html").Send(html)
 	})
