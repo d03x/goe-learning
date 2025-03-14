@@ -25,12 +25,12 @@ func main() {
 		err := db.AutoMigrate(&models.Products{}, &models.Users{})
 		return err
 	})
-	//use embed folder using go:embed
-	newApp.InitHandler(func(a *fiber.App, db *gorm.DB) {
+	newApp.SetupRoute(func(a *fiber.App, db *gorm.DB) {
 		//handler public file
 		userRepo := repositories.NewUser(db)
 		api.NewAuth(a, userRepo)
 	})
+	//use embed folder using go:embed
 	newApp.SetupFrontEnd(publicPath)
 	if err := newApp.Run(); err != nil {
 		slog.Error(err.Error())

@@ -11,7 +11,7 @@ import (
 	"log/slog"
 )
 
-type FuncHandler func(a *fiber.App, db *gorm.DB)
+type RouteSetupCallback func(a *fiber.App, db *gorm.DB)
 type FuncMigrationHandler func(db *gorm.DB) error
 
 type Config struct {
@@ -20,7 +20,7 @@ type Config struct {
 type App interface {
 	Run() error
 	InitMigrate(handler FuncMigrationHandler)
-	InitHandler(handler FuncHandler)
+	SetupRoute(routeCallback RouteSetupCallback)
 	SetupFrontEnd(publicPath embed.FS)
 }
 type app struct {
@@ -59,13 +59,13 @@ func (a *app) InitMigrate(handler FuncMigrationHandler) {
 	}
 }
 
-func (a *app) InitHandler(handler FuncHandler) {
+func (a *app) SetupRoute(routeCallback RouteSetupCallback) {
 	a.server.Use(logger.New(logger.Config{
 		Format:     "[${ip}]:${port} ${status} - ${method} ${path}\n",
 		TimeZone:   "Asia/Jakarta",
 		TimeFormat: "02-Jan-2006",
 	}))
-	handler(a.server, a.database)
+	routeCallback(a.server, a.database)
 }
 
 func (a *app) Run() error {
