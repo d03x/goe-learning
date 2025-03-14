@@ -18,7 +18,10 @@ func NewAuth(app *fiber.App, userRepo domain.UserRepository) {
 
 }
 func (ap Auth) login(ctx fiber.Ctx) error {
-	data := ap.userRepo.FindAll()
+	data, err := ap.userRepo.FindAll()
+	if err != nil {
+		return ctx.SendString(err.Error())
+	}
 	var response []dto.UserResponseDto
 	for _, item := range data {
 		response = append(response, dto.UserResponseDto{

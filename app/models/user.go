@@ -1,11 +1,13 @@
 package models
 
-type Users struct {
-	Id             uint `gorm:"primarykey;default:auto_random()"`
-	Name           string
-	Age            uint
-	Email          string `gorm:"unique"`
-	Address        string
-	Password       string
-	ProfilePicture string
+type User struct {
+	Id             uint   `db:"id"`
+	Name           string `db:"name"`
+	Age            uint   `db:"age"`
+	Email          string `db:"email"`
+	Address        string `db:"address"`
+	Password       string `db:"password"`
+	IsAdmin        bool   `db:"is_admin"`
+	SchoolId       string `db:"school_id"`
+	ProfilePicture string `db:"profile_picture"`
 }

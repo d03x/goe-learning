@@ -3,7 +3,7 @@ package domain
 import "elearning/app/models"
 
 type UserRepository interface {
-	FindAll() []models.Users
+	FindAll() ([]models.User, error)
 }
 
 type UserService interface {

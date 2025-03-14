@@ -3,24 +3,24 @@ package repositories
 import (
 	"elearning/app/domain"
 	"elearning/app/models"
-	"gorm.io/gorm"
+	"github.com/doug-martin/goqu/v9"
 )
 
 type user struct {
-	db *gorm.DB
+	db *goqu.Database
 }
 
-func NewUser(db *gorm.DB) domain.UserRepository {
+func NewUser(db *goqu.Database) domain.UserRepository {
 	return &user{
 		db: db,
 	}
 }
 
-func (a *user) FindAll() []models.Users {
-	a.db.FirstOrCreate(&models.Users{
-		Email: "dadan@gmail.com",
-	})
-	var user []models.Users
-	a.db.Take(&user)
-	return user
+func (a *user) FindAll() ([]models.User, error) {
+	var user []models.User
+	err := a.db.From("users").ScanStructs(&user)
+	if err != nil {
+		return []models.User{}, err
+	}
+	return user, err
 }

@@ -3,11 +3,10 @@ package main
 import (
 	"elearning/app"
 	"elearning/app/api"
-	"elearning/app/models"
 	"elearning/app/repositories"
 	"embed"
+	"github.com/doug-martin/goqu/v9"
 	"github.com/gofiber/fiber/v3"
-	"gorm.io/gorm"
 	"log/slog"
 )
 
@@ -21,11 +20,7 @@ func main() {
 		},
 	}
 	newApp := app.NewApp(config)
-	newApp.InitMigrate(func(db *gorm.DB) error {
-		err := db.AutoMigrate(&models.Products{}, &models.Users{})
-		return err
-	})
-	newApp.SetupRoute(func(a *fiber.App, db *gorm.DB) {
+	newApp.SetupRoute(func(a *fiber.App, db *goqu.Database) {
 		//handler public file
 		userRepo := repositories.NewUser(db)
 		api.NewAuth(a, userRepo)

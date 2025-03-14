@@ -4,15 +4,16 @@ import (
 	"elearning/app/config"
 	"elearning/app/connection"
 	"embed"
+	"github.com/doug-martin/goqu/v9"
+	_ "github.com/doug-martin/goqu/v9/dialect/mysql"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/gofiber/fiber/v3/middleware/static"
-	"gorm.io/gorm"
 	"log/slog"
 )
 
-type RouteSetupCallback func(a *fiber.App, db *gorm.DB)
-type FuncMigrationHandler func(db *gorm.DB) error
+type RouteSetupCallback func(a *fiber.App, db *goqu.Database)
+type FuncMigrationHandler func(db *goqu.Database) error
 
 type Config struct {
 	Fiber fiber.Config
@@ -24,18 +25,18 @@ type App interface {
 	SetupFrontEnd(publicPath embed.FS)
 }
 type app struct {
-	database *gorm.DB
-	server   *fiber.App
-	config   *config.Config
+	db     *goqu.Database
+	server *fiber.App
+	config *config.Config
 }
 
 func NewApp(configParam Config) App {
 	newConfig := config.GetConfig()
 	db := connection.DatabaseConnection(newConfig.DB)
 	return &app{
-		database: db,
-		server:   fiber.New(configParam.Fiber),
-		config:   newConfig,
+		db:     goqu.New("mysql", db),
+		server: fiber.New(configParam.Fiber),
+		config: newConfig,
 	}
 }
 func (a *app) SetupFrontEnd(publicPath embed.FS) {
@@ -54,7 +55,7 @@ func (a *app) SetupFrontEnd(publicPath embed.FS) {
 	})
 }
 func (a *app) InitMigrate(handler FuncMigrationHandler) {
-	err := handler(a.database)
+	err := handler(a.db)
 	if err != nil {
 		slog.Error(err.Error())
 	}
@@ -66,7 +67,7 @@ func (a *app) SetupRoute(routeCallback RouteSetupCallback) {
 		TimeZone:   "Asia/Jakarta",
 		TimeFormat: "02-Jan-2006",
 	}))
-	routeCallback(a.server, a.database)
+	routeCallback(a.server, a.db)
 }
 
 func (a *app) Run() error {
